@@ -1,2 +1,3 @@
-# buttonvsbutton
-A website where you can pick a team and push a button and it counts presses for both teams
+# Button vs. Button
+WIP
+Part of the Grandma YSWS on Hack Club
