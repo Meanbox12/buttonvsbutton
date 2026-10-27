@@ -155,6 +155,11 @@ const listener = async function (request, response) {
             response.setHeader("Content-Type", "text/html");
             response.writeHead(200);
             response.end(addClick(await parseJSONBody(request, response)).toString());
+        } else if (url == "/validate") {
+            response.setHeader("Content-Type", "text/html");
+            response.writeHead(200);
+            let tester = await parseJSONBody(request, response);
+            response.end(validateUser(tester.id).toString());
         }
     } else if (request.method === "GET") {
         if (url == "/join") {
@@ -165,10 +170,6 @@ const listener = async function (request, response) {
             response.setHeader("Content-Type", "application/json");
             response.writeHead(200);
             response.end(JSON.stringify({ "team1": team1, "team2": team2 }));
-        } else if (url == "/validate") {
-            response.setHeader("Content-Type", "text/html");
-            response.writeHead(200);
-            response.end(validateUser().toString());
         } else {
             response.setHeader("Content-Type", "text/html");
             response.writeHead(200);

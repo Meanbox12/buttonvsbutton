@@ -78,82 +78,59 @@
         }
     });
 
-    window.onload = async function () {
+    // These functions are from one of my old projects
+    function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    async function joinGame() {
         const response = await fetch("/join");
         userId = await response.text();
+        setCookie("uid", userId, "1");
+        setTimeout(() => {
+            alert("Your User ID has expired! Refresh the page to get a new one.");
+            setCookie("uid", null, "0");
+            window.location.reload();
+        }, 590000);
+        return userId;
+    }
+
+    window.onload = async function () {
+
+        let savedId = getCookie("uid");
+
+        if (savedId == null) {
+            await joinGame();
+        } else {
+            const response = await fetch("/validate", {
+                method: "POST",
+                body: JSON.stringify({ "id": savedId }),
+                headers: { "Content-Type": "application/json" }
+            });
+            let valid = (await response.text() === "true");
+            if (!valid) {
+                await joinGame();
+            } else {
+                userId = savedId;
+            }
+        }
 
         uidDisplay.innerText = `Your Player ID is ${userId}.`;
     };
-
-    // Returns the parsed JSON as an Array. This function is from the DigitalOcean tutorial.
-    function parseJSONBody(request, response) {
-
-        // Tells whoever called this that it will give a value after it finishes parsing
-        return new Promise((resolve, reject) => {
-            let body = "";
-            let received = 0;
-
-            const contentType = request.headers["content-type"] || "";
-            // Throw an error if the type of data isn't JSON
-            if (!contentType.startsWith("application/json")) {
-                response.writeHead(415, { "Content-Type": "application/json" });
-                response.end(JSON.stringify({ error: "Unsupported Content-Type" }));
-                return reject(new Error("Unsupported Content-Type"));
-            }
-
-            request.on("data", chunk => {
-                received += chunk.length;
-
-                // Throw an error if the data is abnormally large
-                // Since data packets will be tiny (just the team and maybe a user ID) the max size can also be tiny
-                if (received > 1024) {
-                    response.writeHead(413, { "Content-Type": "application/json" });
-                    response.end(JSON.stringify({ error: "Request payload too large" }));
-                    request.destroy();
-                    return reject(new Error("Payload too large"));
-                }
-                // Add the data to the request body
-                body += chunk.toString();
-            });
-
-            request.on("end", () => {
-                try {
-                    // Throw an error if there is no request body
-                    if (!body) {
-                        response.writeHead(400, { "Content-Type": "application/json" });
-                        response.end(JSON.stringify({ error: "Empty request body" }));
-                        return reject(new Error("Empty request body"));
-                    }
-
-                    // Parse JSON
-                    const data = JSON.parse(body);
-
-                    // Throw an error if the data is not the right type
-                    if (typeof data !== "object" || data == null || Array.isArray(data)) {
-                        response.writeHead(400, { "Content-Type": "application/json" });
-                        response.end(JSON.stringify({ error: "Invalid JSON object" }));
-                        return reject(new Error("Invalid JSON object"));
-                    }
-
-                    // If there are no problems, return the parsed JSON
-                    resolve(data);
-
-                    // Throw an error if there is a problem parsing the JSON
-                } catch (parseError) {
-                    response.writeHead(400, { "Content-Type": "application/json" });
-                    response.end(JSON.stringify({ error: "Malformed JSON" }));
-                    return reject(new Error("Malformed JSON"));
-                }
-            });
-
-            // Throw an error if there is a network error
-            request.on("error", (error) => {
-                console.error("Request error: ", error.message);
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Request error' }));
-            });
-        });
-    }
 
     async function updateCounts() {
         const response = await fetch("/count");
@@ -165,8 +142,10 @@
         teamClicks.innerText = `Team 1 has clicked the button ${team1} times. Team 2 has clicked the button ${team2} times.`;
     }
 
-    updateCounts();
-    setInterval(updateCounts, 1000);
+    setTimeout(() => {
+        updateCounts();
+        setInterval(updateCounts, 1000);
+    }, 100);
 
 </script>
 
