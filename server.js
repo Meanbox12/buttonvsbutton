@@ -104,12 +104,15 @@ function addClick(data) {
         if (data.team == 1) {
             team1++;
             console.log(`${data.id} clicked for Team 1 and they now have ${team1} clicks.`);
+            return true;
         } else if (data.team == 2) {
             team2++;
             console.log(`${data.id} clicked for Team 2 and they now have ${team2} clicks.`);
+            return true;
         }
     } else {
-        console.log(`Invalid user ${data.id} tried to click.`)
+        console.log(`Invalid user ${data.id} tried to click.`);
+        return false;
     }
 }
 
@@ -128,7 +131,12 @@ function createUser() {
     }
 
     if (retries < 50) {
-        users.push(uid);
+        let position = users.push(uid);
+        // User IDs will be deleted after 10 minutes
+        setTimeout(() => {
+            users.splice(position - 1);
+            console.log(`User ID ${uid} expired.`)
+        }, 600000);
         console.log(`Created a user with id ${uid}`);
         return uid;
     } else {
@@ -144,14 +152,23 @@ const listener = async function (request, response) {
     if (request.method === "POST") {
         let url = request.url;
         if (url == "/click") {
-            addClick(await parseJSONBody(request, response));
+            response.setHeader("Content-Type", "text/html");
+            response.writeHead(200);
+            response.end(addClick(await parseJSONBody(request, response)).toString());
         }
     } else if (request.method === "GET") {
         if (url == "/join") {
             response.setHeader("Content-Type", "text/html");
             response.writeHead(200);
             response.end(createUser());
-            console.log("test");
+        } else if (url == "/count") {
+            response.setHeader("Content-Type", "application/json");
+            response.writeHead(200);
+            response.end(JSON.stringify({ "team1": team1, "team2": team2 }));
+        } else if (url == "/validate") {
+            response.setHeader("Content-Type", "text/html");
+            response.writeHead(200);
+            response.end(validateUser().toString());
         } else {
             response.setHeader("Content-Type", "text/html");
             response.writeHead(200);
