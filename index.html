@@ -10,52 +10,196 @@
 
     <style>
 
+        :root {
+            --color-bar-width: 50%;
+            --team-color: white;
+        }
+
+        html {
+            height: 100%;
+            display: table;
+            margin: auto;
+        }
+
+        body {
+            height: 100%;
+            background-color: black;
+            padding: 20px;
+            margin: 0;
+            color: white;
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            width: 100%;
+        }
+
+        #headerSection>h1 {
+            font-size: 9vw;
+            font-family: 'Arial', sans-serif;
+            font-weight: 1000;
+            margin: 10px;
+        }
+
+        .section>span {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #teamSelectSection>h1 {
+            font-size: 5vw;
+        }
+
+        .section>span {
+            width: 75%;
+        }
+
+        .section>span>button {
+            font-size: 5vw;
+            font-family: 'Arial', sans-serif;
+            font-weight: 1000;
+            padding: 40px;
+            width: 50%;
+            border: 2px solid black;
+            transition: all 0.3s;
+            background-color: white;
+            text-align: center;
+        }
+
+        .section>span>button:hover {
+            cursor: pointer;
+        }
+
+        #team1btn:hover {
+            background-color: rgb(255, 210, 128);
+        }
+
+        #team2btn:hover {
+            background-color: rgb(255, 173, 255);
+        }
+
+        #colorBarContainer {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            width: 75vw;
+            height: 10vh;
+        }
+
+        #colorBarInner1, #colorBarInner2 {
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            font-family: Verdana, sans-serif;
+        }
+
+        #colorBarInner1 {
+            width: var(--color-bar-width-1);
+            background-color: orange;
+        }
+
+        #colorBarInner2 {
+            height: 100%;
+            width: var(--color-bar-width-2);
+            background-color: purple;
+        }
+
+        #clicker {
+            margin: 25px;
+            width: 25vw;
+            height: 25vw;
+            background-color: var(--team-color);
+            border: none;
+            cursor: pointer;
+            font-size: 7vw;
+            font-weight: 1000;
+            border-radius: 25px;
+            touch-action: manipulation;
+        }
+
+        #clicker:active {
+            transform: rotate(1deg);
+        }
     </style>
 </head>
 
 <body>
-    <h1>Button vs. Button</h1>
-    <p id="uidDisplay">Your Player ID is XXXX-XXXX.</p>
-    <p id="teamClicks">Team 1 has clicked the button X times. Team 2 has clicked the button X times.</p>
-    <p id="instructions">Select your team:</p>
-    <p id="myClicks" style="display: none;">You have clicked the button 0 times.</p>
-    <button id="team1btn">Team 1</button>
-    <button id="team2btn">Team 2</button>
-    <button id="clicker" style="display: none;">Click</button>
+
+    <div id="headerSection" class="section">
+        <h1 id="titleText"><span style="color: orange">Button</span> <span style="color: white;">vs</span> <span
+                style="color: purple;">Button</span></h1>
+    </div>
+
+    <div id="teamSelectSection" class="section">
+        <p style="font-size: 30px;">Click the button as many times as possible to keep your team on top!</p>
+        <p>This game is only one file! Check out the source code at <a href="https://github.com/Meanbox12/buttonvsbutton">https://github.com/Meanbox12/buttonvsbutton</a>.</p>
+        <h1>Choose a Team</h1>
+        <span>
+            <button id="team1btn">Orange</button>
+            <button id="team2btn">Purple</button>
+        </span>
+    </div>
+
+    <div id="gameSection" class="section" style="display: none;">
+        <div id="colorBarContainer">
+            <div id="colorBarInner1">0</div>
+            <div id="colorBarInner2">0</div>
+        </div>
+        <button id="clicker">0</button>
+    </div>
+
+    <p id="uidDisplay" style="display: none;">Your Player ID is XXXX-XXXX.</p>
 </body>
 
 <script>
     const uidDisplay = document.getElementById("uidDisplay");
-    const instructions = document.getElementById("instructions");
-    const myClicks = document.getElementById("myClicks");
-    const teamClicks = document.getElementById("teamClicks");
     const team1btn = document.getElementById("team1btn");
     const team2btn = document.getElementById("team2btn");
     const clicker = document.getElementById("clicker");
+    const titleText = document.getElementById("titleText");
+
+    const headerSection = document.getElementById("headerSection");
+    const teamSelectSection = document.getElementById("teamSelectSection");
+    const gameSection = document.getElementById("gameSection");
+
+    const colorBarInner1 = document.getElementById("colorBarInner1");
+    const colorBarInner2 = document.getElementById("colorBarInner2");
+
+    const rootCss = document.querySelector(":root");
 
     let userId = 0;
     let userTeam = 0;
     let userClicks = 0;
 
     let team1 = 0;
-    let clicks2 = 0;
+    let team2 = 0;
 
-    function screen2() {
-        instructions.style.display = "none";
-        team1btn.style.display = "none";
-        team2btn.style.display = "none";
-        clicker.style.display = "block";
-        myClicks.style.display = "block";
+    async function showGame() {
+        await loadUid();
+        rootCss.style.setProperty("--team-color", (userTeam == 1 ? "orange" : "purple"));
+        teamSelectSection.style.display = "none";
+        gameSection.style.display = "flex";
+        titleText.style.fontSize = "5vw"
     }
 
     team1btn.addEventListener("click", function () {
         userTeam = 1;
-        screen2();
+        showGame();
     });
 
     team2btn.addEventListener("click", function () {
         userTeam = 2;
-        screen2();
+        showGame();
     });
 
     clicker.addEventListener("click", async function () {
@@ -70,9 +214,9 @@
 
             if (success) {
                 userClicks++;
-                myClicks.innerText = `You have clicked the button ${userClicks} time${(userClicks == 1 ? "" : "s")}.`;
+                clicker.innerText = userClicks;
             } else {
-                alert("An error occured. Your User ID may be invalid.");
+                alert("Failed to validate your User ID. Please try refreshing the page.");
                 window.location.reload();
             }
         }
@@ -97,7 +241,7 @@
         return null;
     }
 
-    async function joinGame() {
+    async function getPlayerId() {
         const response = await fetch("/join");
         userId = await response.text();
         setCookie("uid", userId, "1");
@@ -109,12 +253,11 @@
         return userId;
     }
 
-    window.onload = async function () {
-
+    async function loadUid() {
         let savedId = getCookie("uid");
 
         if (savedId == null) {
-            await joinGame();
+            await getPlayerId();
         } else {
             const response = await fetch("/validate", {
                 method: "POST",
@@ -123,28 +266,36 @@
             });
             let valid = (await response.text() === "true");
             if (!valid) {
-                await joinGame();
+                await getPlayerId();
             } else {
                 userId = savedId;
             }
         }
-
-        uidDisplay.innerText = `Your Player ID is ${userId}.`;
-    };
+    }
 
     async function updateCounts() {
         const response = await fetch("/count");
         countJSON = await response.json();
 
+        // Check if the click count has been reset by the server.
+        if (countJSON.team1 - team1 < -900000 || countJSON.team2 - team2 < -900000) {
+            alert("Congratulations! The total clicks have reached 1,000,000. The winner is: " + (team1 > team2 ? "Orange" : "Purple") + " Team! The counters have been reset to 0.");
+            userClicks = 0;
+        }
+
         team1 = countJSON.team1;
         team2 = countJSON.team2;
+        
+        colorBarInner1.innerText = team1;
+        colorBarInner2.innerText = team2;
 
-        teamClicks.innerText = `Team 1 has clicked the button ${team1} times. Team 2 has clicked the button ${team2} times.`;
+        rootCss.style.setProperty("--color-bar-width-1", `${(team1 + team2 == 0 ? 50 : (team1 / (team1 + team2)) * 100)}%`);
+        rootCss.style.setProperty("--color-bar-width-2", `${(team1 + team2 == 0 ? 50 : (team2 / (team1 + team2)) * 100)}%`);
     }
 
     setTimeout(() => {
         updateCounts();
-        setInterval(updateCounts, 1000);
+        setInterval(updateCounts, 100);
     }, 100);
 
 </script>

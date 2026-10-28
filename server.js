@@ -98,16 +98,27 @@ function generateUID() {
     return uid;
 }
 
+// Restart the counters at 1000000 clicks. 
+// Since all data is stored in memory and the server will inevitably restart at some point, I added this to make it less bad if it restarts. 1m clicks is still a lot, though.
+function checkIfRestartNeeded() {
+    if (team1 + team2 >= 1000000) {
+        team1 = 0;
+        team2 = 0;
+    }
+}
+
 // Checks if a click is valid and adds it to the total
 function addClick(data) {
     if (validateUser(data.id)) {
         if (data.team == 1) {
             team1++;
             console.log(`${data.id} clicked for Team 1 and they now have ${team1} clicks.`);
+            checkIfRestartNeeded();
             return true;
         } else if (data.team == 2) {
             team2++;
             console.log(`${data.id} clicked for Team 2 and they now have ${team2} clicks.`);
+            checkIfRestartNeeded();
             return true;
         }
     } else {
