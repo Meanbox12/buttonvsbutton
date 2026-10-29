@@ -3,7 +3,6 @@
 
 // Modules
 const http = require("http");
-const fs = require("fs").promises;
 
 // Server variables
 const host = "127.0.0.1";
@@ -412,17 +411,14 @@ function addClick(data) {
     if (validateUser(data.id)) {
         if (data.team == 1) {
             team1++;
-            console.log(`${data.id} clicked for Team 1 and they now have ${team1} clicks.`);
             checkIfRestartNeeded();
             return true;
         } else if (data.team == 2) {
             team2++;
-            console.log(`${data.id} clicked for Team 2 and they now have ${team2} clicks.`);
             checkIfRestartNeeded();
             return true;
         }
     } else {
-        console.log(`Invalid user ${data.id} tried to click.`);
         return false;
     }
 }
@@ -446,9 +442,7 @@ function createUser() {
         // User IDs will be deleted after 10 minutes
         setTimeout(() => {
             users.splice(position - 1);
-            console.log(`User ID ${uid} expired.`)
         }, 600000);
-        console.log(`Created a user with id ${uid}`);
         return uid;
     } else {
         return false;
@@ -484,11 +478,7 @@ const listener = async function (request, response) {
         } else {
             response.setHeader("Content-Type", "text/html");
             response.writeHead(200);
-            if (DEBUG) {
-                fs.readFile(__dirname + "/index.html").then(contents => { response.end(contents) });
-            } else {
-                response.end(HTML);
-            }
+            response.end(HTML);
         }
     }
 };
